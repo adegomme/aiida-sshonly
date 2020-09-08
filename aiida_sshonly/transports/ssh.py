@@ -71,89 +71,92 @@ class SshTransport(Transport):  # pylint: disable=too-many-public-methods
     _valid_connect_options = [
         ('username', {
             'prompt': 'User name',
-            'help': 'Login user name on the remote machine.',
+            'help': 'user name for the computer',
+            'non_interactive_default': True
+        }),
+        ('port', {
+            'option': options.PORT,
+            'prompt': 'port Nr',
             'non_interactive_default': True
         }),
         (
-            'port',
-            {
-                'option': options.PORT,
-                'prompt': 'Port number',
-                'non_interactive_default': True,
-            },
+            'look_for_keys', {
+                'switch': True,
+                'prompt': 'Look for keys',
+                'help': 'switch automatic key file discovery on / off',
+                'non_interactive_default': True
+            }
         ),
-        ('look_for_keys', {
-            'default': True,
-            'switch': True,
-            'prompt': 'Look for keys',
-            'help':
-            'Automatically look for private keys in the ~/.ssh folder.',
-            'non_interactive_default': True
-        }),
-        ('key_filename', {
-            'type': AbsolutePathOrEmptyParamType(dir_okay=False, exists=True),
-            'prompt': 'SSH key file',
-            'help':
-            'Absolute path to your private SSH key. Leave empty to use the path set in the SSH config.',
-            'non_interactive_default': True
-        }),
-        ('timeout', {
-            'type': int,
-            'prompt': 'Connection timeout in s',
-            'help':
-            'Time in seconds to wait for connection before giving up. Leave empty to use default value.',
-            'non_interactive_default': True
-        }),
-        ('allow_agent', {
-            'default': False,
-            'switch': True,
-            'prompt': 'Allow ssh agent',
-            'help': 'Switch to allow or disallow using an SSH agent.',
-            'non_interactive_default': True
-        }),
-        ('proxy_command', {
-            'prompt': 'SSH proxy command',
-            'help': 'SSH proxy command for tunneling through a proxy server.'
-            ' Leave empty to parse the proxy command from the SSH config file.',
-            'non_interactive_default': True
-        }),  # Managed 'manually' in connect
-        ('compress', {
-            'default': True,
-            'switch': True,
-            'prompt': 'Compress file transfers',
-            'help': 'Turn file transfer compression on or off.',
-            'non_interactive_default': True
-        }),
-        ('gss_auth', {
-            'default': False,
-            'type': bool,
-            'prompt': 'GSS auth',
-            'help': 'Enable when using GSS kerberos token to connect.',
-            'non_interactive_default': True
-        }),
-        ('gss_kex', {
-            'default': False,
-            'type': bool,
-            'prompt': 'GSS kex',
-            'help':
-            'GSS kex for kerberos, if not configured in SSH config file.',
-            'non_interactive_default': True
-        }),
-        ('gss_deleg_creds', {
-            'default': False,
-            'type': bool,
-            'prompt': 'GSS deleg_creds',
-            'help':
-            'GSS deleg_creds for kerberos, if not configured in SSH config file.',
-            'non_interactive_default': True
-        }),
+        (
+            'key_filename', {
+                'type': AbsolutePathOrEmptyParamType(dir_okay=False, exists=True),
+                'prompt': 'SSH key file',
+                'help': 'Manually pass a key file if default path is not set in ssh config',
+                'non_interactive_default': True
+            }
+        ),
+        (
+            'timeout', {
+                'type': int,
+                'prompt': 'Connection timeout in s',
+                'help': 'time in seconds to wait for connection before giving up',
+                'non_interactive_default': True
+            }
+        ),
+        (
+            'allow_agent', {
+                'switch': True,
+                'prompt': 'Allow ssh agent',
+                'help': 'switch to allow or disallow ssh agent',
+                'non_interactive_default': True
+            }
+        ),
+        (
+            'proxy_command', {
+                'prompt': 'SSH proxy command',
+                'help': 'SSH proxy command',
+                'non_interactive_default': True
+            }
+        ),  # Managed 'manually' in connect
+        (
+            'compress', {
+                'switch': True,
+                'prompt': 'Compress file transfers',
+                'help': 'switch file transfer compression on / off',
+                'non_interactive_default': True
+            }
+        ),
+        (
+            'gss_auth', {
+                'type': bool,
+                'prompt': 'GSS auth',
+                'help': 'GSS auth for kerberos',
+                'non_interactive_default': True
+            }
+        ),
+        (
+            'gss_kex', {
+                'type': bool,
+                'prompt': 'GSS kex',
+                'help': 'GSS kex for kerberos',
+                'non_interactive_default': True
+            }
+        ),
+        (
+            'gss_deleg_creds', {
+                'type': bool,
+                'prompt': 'GSS deleg_creds',
+                'help': 'GSS deleg_creds for kerberos',
+                'non_interactive_default': True
+            }
+        ),
         ('gss_host', {
             'prompt': 'GSS host',
-            'help':
-            'GSS host for kerberos, if not configured in SSH config file.',
+            'help': 'GSS host for kerberos',
             'non_interactive_default': True
         }),
         # for Kerberos support through python-gssapi
+
     ]
 
     _valid_connect_params = [i[0] for i in _valid_connect_options]
@@ -169,25 +172,22 @@ class SshTransport(Transport):  # pylint: disable=too-many-public-methods
     # to return a suggestion; it must accept only one parameter, being a Computer
     # instance
     _valid_auth_options = _valid_connect_options + [
-        ('load_system_host_keys', {
-            'default': True,
-            'switch': True,
-            'prompt': 'Load system host keys',
-            'help': 'Load system host keys from default SSH location.',
-            'non_interactive_default': True
-        }),
-        ('key_policy', {
-            'default':
-            'RejectPolicy',
-            'type':
-            click.Choice(['RejectPolicy', 'WarningPolicy', 'AutoAddPolicy']),
-            'prompt':
-            'Key policy',
-            'help':
-            'SSH key policy if host is not known.',
-            'non_interactive_default':
-            True
-        })
+        (
+            'load_system_host_keys', {
+                'switch': True,
+                'prompt': 'Load system host keys',
+                'help': 'switch loading system host keys on / off',
+                'non_interactive_default': True
+            }
+        ),
+        (
+            'key_policy', {
+                'type': click.Choice(['RejectPolicy', 'WarningPolicy', 'AutoAddPolicy']),
+                'prompt': 'Key policy',
+                'help': 'SSH key policy',
+                'non_interactive_default': True
+            }
+        )
     ]
 
     @classmethod
