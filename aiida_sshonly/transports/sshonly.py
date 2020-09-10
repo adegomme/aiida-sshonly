@@ -18,7 +18,7 @@ import paramiko
 from aiida.common.escaping import escape_for_bash
 from .ssh import SshTransport
 
-__all__ = ('SshOnlyTransport')
+__all__ = ['SshOnlyTransport']
 
 
 class SshOnlyTransport(SshTransport):  # pylint: disable=too-many-public-methods
@@ -300,13 +300,14 @@ class SshOnlyTransport(SshTransport):  # pylint: disable=too-many-public-methods
         raise IOError(
             'Error while executing chmod. Exit code: {}'.format(retval))
 
-    def putfile(
-            self,  
-            localpath,
-            remotepath,
-            callback=None,
-            dereference=True,
-            overwrite=True):
+#pylint: disable-msg=too-many-arguments,too-many-locals
+
+    def putfile(self,
+                localpath,
+                remotepath,
+                callback=None,
+                dereference=True,
+                overwrite=True):
         """
         Put a file from local to remote.
 
@@ -332,15 +333,9 @@ class SshOnlyTransport(SshTransport):  # pylint: disable=too-many-public-methods
         with open(localpath, 'rb') as fl:
             exe = 'echo'
             exe_post = '| cat >'
-            #         with open(localpath, 'r', encoding='utf-8') as fl:
-            #            exe = 'uuencode -m'
-            #            exe_post = ' - | uudecode >'
             command = '{} {} {} {}'.format(
                 exe, escape_for_bash(paramiko.py3compat.u(fl.read())),
-                exe_post,
-                paramiko.py3compat.u(remotepath)
-                #                exe, escape_for_bash(fl.read()), exe_post, paramiko.py3compat.u(remotepath)
-            )
+                exe_post, paramiko.py3compat.u(remotepath))
 
             retval, stdout, stderr = self.exec_command_wait(command)
             if retval == 0:
@@ -359,13 +354,12 @@ class SshOnlyTransport(SshTransport):  # pylint: disable=too-many-public-methods
         raise IOError(
             'Error while executing put. Exit code: {}'.format(retval))
 
-    def getfile(
-            self,
-            remotepath,
-            localpath,
-            callback=None,
-            dereference=True,
-            overwrite=True):
+    def getfile(self,
+                remotepath,
+                localpath,
+                callback=None,
+                dereference=True,
+                overwrite=True):
         """
         Get a file from remote to local.
 
@@ -406,6 +400,9 @@ class SshOnlyTransport(SshTransport):  # pylint: disable=too-many-public-methods
                 "stderr: '{}'".format(retval, stdout, stderr))
         raise IOError(
             'Error while executing get. Exit code: {}'.format(retval))
+
+
+#pylint: enable-msg=too-many-arguments,too-many-locals
 
     def lstat(self, path):
         return self._stat(path, option='')
