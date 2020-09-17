@@ -12,10 +12,10 @@
         "Natural Language :: English",
         "Framework :: AiiDA"
     ],
-    "version": "0.1.0a1",
+    "version": "0.1.0a2",
     "entry_points": {
 	"aiida.transports":[
-            "sshonly = aiida_sshonly.transports.sshonly:SshOnlyTransport"
+            "ssh_only = aiida_sshonly.transports.sshonly:SshOnlyTransport"
 	]
     },
     "include_package_data": true,
