@@ -25,6 +25,7 @@ class SshOnlyTransport(SshTransport):  # pylint: disable=too-many-public-methods
     """
     Support connection, command execution and data transfer to remote computers via SSH only.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initialize the SshOnlyTransport class.
@@ -41,6 +42,7 @@ class SshOnlyTransport(SshTransport):  # pylint: disable=too-many-public-methods
         accepted paramiko.SSHClient.connect() params.
         """
         super().__init__(*args, **kwargs)
+        self._MAX_EXEC_COMMAND_LOG_SIZE = 1000
         self._cwd = None
 
     def open_file_transport(self):

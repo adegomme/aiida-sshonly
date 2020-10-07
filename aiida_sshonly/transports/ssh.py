@@ -190,6 +190,9 @@ class SshTransport(Transport):  # pylint: disable=too-many-public-methods
         )
     ]
 
+    _MAX_EXEC_COMMAND_LOG_SIZE = None
+
+
     @classmethod
     def _get_username_suggestion_string(cls, computer):
         """
@@ -1319,7 +1322,7 @@ class SshTransport(Transport):  # pylint: disable=too-many-public-methods
             command_to_execute = command
 
         self.logger.debug('Command to be executed: {}'.format(
-            command_to_execute[:1000]))
+            command_to_execute[:self._MAX_EXEC_COMMAND_LOG_SIZE]))
 
         # Note: The default shell will eat one level of escaping, while
         # 'bash -l -c ...' will eat another. Thus, we need to escape again.
