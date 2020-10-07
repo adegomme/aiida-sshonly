@@ -332,29 +332,42 @@ class SshOnlyTransport(SshTransport):  # pylint: disable=too-many-public-methods
             raise OSError('Destination already exists: not overwriting it')
 
         file_size = os.stat(localpath).st_size
+        #there is a maximum limit in linux kernel size of argument in a command (usually 131071) and fails afterwards. 
+        #Split in several parts when getting there
+        if(file_size > 50000):
+          self.logger.debug('Trying to send a large file, will have to cut it : size {}'.format(file_size))
+        firstchunk = True
         with open(localpath, 'rb') as fl:
-            exe = 'echo'
-            exe_post = '| cat >'
-            command = '{} {} {} {}'.format(
-                exe, escape_for_bash(paramiko.py3compat.u(fl.read())),
-                exe_post, paramiko.py3compat.u(remotepath))
+            buffer = fl.read(50000)
+            while buffer:
+                exe = 'echo -n'
+                exe_post_init = '| cat >'
+                exe_post = '| cat >>'
 
-            retval, stdout, stderr = self.exec_command_wait(command)
-            if retval == 0:
-                if stderr.strip():
-                    self.logger.warning(
-                        'There was nonempty stderr in the put command: {}'.
-                        format(stderr))
-                if callback is not None:
-                    size = self.stat(remotepath).st_size
-                    callback(size, file_size)
-                #output from put in sftp was always ignored.
-                return
-            self.logger.error(
-                "Problem executing put. Exit code: {}, stdout: '{}', "
-                "stderr: '{}'".format(retval, stdout, stderr))
-        raise IOError(
-            'Error while executing put. Exit code: {}'.format(retval))
+                command = '{} {} {} {}'.format(
+                    exe, escape_for_bash(paramiko.py3compat.u(buffer)),
+                    exe_post_init if firstchunk else exe_post,
+                    paramiko.py3compat.u(remotepath))
+
+                retval, stdout, stderr = self.exec_command_wait(command)
+                if retval == 0:
+                    if stderr.strip():
+                        self.logger.warning(
+                            'There was nonempty stderr in the put command: {}'.
+                            format(stderr))
+                    if callback is not None:
+                        size = self.stat(remotepath).st_size
+                        callback(size, file_size)
+                else:
+                    self.logger.error(
+                        "Problem executing put. Exit code: {}, stdout: '{}', "
+                        "stderr: '{}'".format(retval, stdout, stderr))
+                    raise IOError(
+                        'Error while executing put. Exit code: {}'.format(retval))
+                firstchunk = False
+                buffer = fl.read(50000)
+
+
 
     def getfile(self,
                 remotepath,
