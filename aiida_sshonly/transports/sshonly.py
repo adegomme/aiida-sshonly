@@ -16,7 +16,13 @@ from errno import ENOTDIR
 import paramiko
 
 from aiida.common.escaping import escape_for_bash
-from .ssh import SshTransport
+
+import aiida
+from distutils.version import StrictVersion  # pylint: disable=no-name-in-module,import-error
+if aiida.get_strict_version() < StrictVersion('1.6.0'):
+  from .ssh import SshTransport
+else:
+  from aiida.transports.plugins.ssh import SshTransport
 
 __all__ = ['SshOnlyTransport']
 
